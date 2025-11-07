@@ -1,0 +1,46 @@
+name: Build Emacs on Windows 2025
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    name: Build Emacs (Windows 2025)
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout Emacs source
+        uses: actions/checkout@v4
+        with:
+          repository: emacs-mirror/emacs
+          ref: master
+          path: emacs
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-libjpeg-turbo
+            mingw-w64-x86_64-libtiff
+            mingw-w64-x86_64-giflib
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-libxml2
+            mingw-w64-x86_64-gnutls
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-harfbuzz
+            mingw-w64-x86_64-libjansson
+
+      - name: Configure and build Emacs
+        shell: msys2 {0}
+        working-directory: emacs
+        run: |
+          ./autogen.sh
+          ./configure --prefix=/mingw64 --with-native-compilation
+          make -j$(nproc)
