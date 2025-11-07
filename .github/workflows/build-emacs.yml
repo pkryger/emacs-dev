@@ -26,7 +26,6 @@ jobs:
           install: >-
             base-devel
             git
-            autoconf
             autoconf2.71
             automake
             texinfo
@@ -43,21 +42,29 @@ jobs:
             mingw-w64-x86_64-harfbuzz
             mingw-w64-x86_64-jansson
 
-      - name: Force Autoconf 2.71 for autoreconf
+      - name: Prepare Autoconf 2.71 environment
         shell: msys2 {0}
         run: |
-           # Replace autoconf-related binaries with 2.71 versions
-           ln -sf /usr/bin/autoconf-2.71 /usr/bin/autoconf
-           ln -sf /usr/bin/autoheader-2.71 /usr/bin/autoheader
-           ln -sf /usr/bin/autom4te-2.71 /usr/bin/autom4te
-           ln -sf /usr/bin/ifnames-2.71 /usr/bin/ifnames
-           autoconf --version
-           autoreconf --version
+          ln -sf /usr/bin/autoconf-2.71 /usr/bin/autoconf
+          ln -sf /usr/bin/autoheader-2.71 /usr/bin/autoheader
+          ln -sf /usr/bin/autom4te-2.71 /usr/bin/autom4te
+          ln -sf /usr/bin/ifnames-2.71 /usr/bin/ifnames
+          autoconf --version
 
-      - name: Configure and build Emacs
+      - name: Bootstrap and configure Emacs manually
         shell: msys2 {0}
         working-directory: emacs
         run: |
-          ./autogen.sh
+          echo "Running manual autogen/bootstrap sequence..."
+          ./autogen.sh autoconf
+          aclocal -I m4
+          autoconf -I m4
+          autoheader
+          automake --add-missing
           ./configure --prefix=/mingw64 --with-native-compilation
+
+      - name: Build Emacs
+        shell: msys2 {0}
+        working-directory: emacs
+        run: |
           make -j$(nproc)
