@@ -35,7 +35,7 @@ jobs:
             mingw-w64-x86_64-gnutls
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-harfbuzz
-            mingw-w64-x86_64-libjansson
+            mingw-w64-x86_64-jansson
 
       - name: Configure and build Emacs
         shell: msys2 {0}
