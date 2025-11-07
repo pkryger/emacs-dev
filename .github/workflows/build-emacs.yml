@@ -26,7 +26,7 @@ jobs:
           install: >-
             base-devel
             git
-            autoconf
+            autoconf2.71
             automake
             texinfo
             make
@@ -41,6 +41,14 @@ jobs:
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-harfbuzz
             mingw-w64-x86_64-jansson
+
+      - name: Select autoconf 2.71
+        shell: msys2 {0}
+        run: |
+          ln -sf /usr/bin/autoconf-2.71 /usr/bin/autoconf
+          ln -sf /usr/bin/autoheader-2.71 /usr/bin/autoheader
+          ln -sf /usr/bin/autom4te-2.71 /usr/bin/autom4te
+          autoconf --version
 
       - name: Configure and build Emacs
         shell: msys2 {0}
