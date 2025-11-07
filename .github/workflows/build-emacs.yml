@@ -8,8 +8,8 @@ on:
 
 jobs:
   build:
-    name: Build Emacs (Windows 2025)
     runs-on: windows-2025
+    name: Build Emacs (Windows 2025)
 
     steps:
       - name: Checkout Emacs source
@@ -51,12 +51,11 @@ jobs:
           ln -sf /usr/bin/ifnames-2.71 /usr/bin/ifnames
           autoconf --version
 
-      - name: Bootstrap and configure Emacs manually
+      - name: Manually bootstrap without autoreconf
         shell: msys2 {0}
         working-directory: emacs
         run: |
-          echo "Running manual autogen/bootstrap sequence..."
-          ./autogen.sh autoconf
+          echo "Bootstrapping manually (bypassing autoreconf)..."
           aclocal -I m4
           autoconf -I m4
           autoheader
