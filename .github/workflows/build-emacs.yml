@@ -13,14 +13,11 @@ jobs:
 
     steps:
       - name: Configure git
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_ACTOR_ID: ${{ github.actor_id }}
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
-          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "emacs-dev[bot]@users.noreply.github.com"
+          git config --global user.name "emacs-dev[bot]"
           git config -l
 
       - name: Checkout Emacs source
@@ -51,19 +48,6 @@ jobs:
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-harfbuzz
             mingw-w64-x86_64-jansson
-
-      - name: Configure MSYS2 git
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_ACTOR_ID: ${{ github.actor_id }}
-        shell: msys2 {0}
-        working-directory: emacs
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config -l
 
       - name: Build Emacs
         shell: msys2 {0}
