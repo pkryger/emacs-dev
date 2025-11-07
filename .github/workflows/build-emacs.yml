@@ -35,6 +35,7 @@ jobs:
             base-devel
             autoconf
             automake
+            git
             texinfo
             make
             mingw-w64-x86_64-toolchain
@@ -48,6 +49,14 @@ jobs:
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-harfbuzz
             mingw-w64-x86_64-jansson
+
+      - name: Configure MSYS2 git
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "emacs-dev[bot]@users.noreply.github.com"
+          git config --global user.name "emacs-dev[bot]"
+          git config -l
 
       - name: Build Emacs
         shell: msys2 {0}
