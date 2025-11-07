@@ -49,6 +49,11 @@ jobs:
           ln -sf /usr/bin/autoheader-2.71 /usr/bin/autoheader
           ln -sf /usr/bin/autom4te-2.71 /usr/bin/autom4te
           autoconf --version
+          # Manually create autoreconf wrapper for 2.71
+          echo '#!/bin/sh' > /usr/bin/autoreconf
+          echo 'exec /usr/bin/autoconf-2.71 --force "$@"' >> /usr/bin/autoreconf
+          chmod +x /usr/bin/autoreconf
+          autoconf --version
 
       - name: Configure and build Emacs
         shell: msys2 {0}
