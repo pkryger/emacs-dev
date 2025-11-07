@@ -47,5 +47,5 @@ jobs:
         working-directory: emacs
         run: |
           ./autogen.sh
-          ./configure --prefix=/mingw64 --with-native-compilation
+          ./configure --prefix=/mingw64 --without-native-compilation
           make -j$(nproc)
