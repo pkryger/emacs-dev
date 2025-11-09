@@ -2,6 +2,12 @@ name: Build Emacs on Windows 2025
 
 on:
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
   push:
     branches: [ main ]
   pull_request:
@@ -61,3 +67,7 @@ jobs:
         working-directory: emacs
         run: |
           ./src/emacs -batch -l ../test/lisp/package-vc-tests.el -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' -f ert-run-tests-batch-and-exit
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
