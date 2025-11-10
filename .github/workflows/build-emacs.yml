@@ -66,7 +66,11 @@ jobs:
         shell: msys2 {0}
         working-directory: emacs
         run: |
-          ./src/emacs -batch -l ../test/lisp/package-vc-tests.el -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' -f ert-run-tests-batch-and-exit
+          ./src/emacs -batch -l ../test/lisp/package-vc-tests.el \
+              -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' \
+              -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' \
+              -eval '(vc-git-command nil 0 nil "config" "--global" "branch.autosetupmerge" "true")' \
+              -f ert-run-tests-batch-and-exit
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
