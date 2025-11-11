@@ -86,19 +86,18 @@ jobs:
           path: emacs
           key: ${{ steps.cache-key.outputs.key }}
 
-      - name: Configure git user name and email
-        if: steps.restore-cache.outputs.cache-hit == 'true'
-        run: |
-          git config --global user.email emacs-dev[bot]@users.noreply.github.com
-          git config --global user.name emacs-dev[bot]
+      - name: Checkout Emacs source on dev branch
+        uses: actions/checkout@v4
+        with:
+          clean: false
+          repository: pkryger/emacs
+          ref: dev-emacs-31-package-vc
+          path: emacs
 
       - name: Build Emacs source on dev branch
         shell: msys2 {0}
         working-directory: emacs
         run: |
-          git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin \
-              '+refs/heads/dev-emacs-31-package-vc*:refs/remotes/origin/dev-emacs-31-package-vc*'
-          git checkout dev-emacs-31-package-vc
           make -j$(nproc)
 
       - name: Run package-vc-tests
