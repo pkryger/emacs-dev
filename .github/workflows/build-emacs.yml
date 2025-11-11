@@ -62,7 +62,7 @@ jobs:
           path: emacs
           key: ${{ steps.cache-key.outputs.key }}
 
-      - name: Checkout Emacs source
+      - name: Checkout Emacs source on master branch
         if: steps.restore-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
@@ -86,13 +86,18 @@ jobs:
           path: emacs
           key: ${{ steps.cache-key.outputs.key }}
 
+      - name: Build Emacs source on dev branch
+        uses: actions/checkout@v4
+        run: |
+          cd emacs
+          git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin \
+              '+refs/heads/dev-emacs-31-package-vc*:refs/remotes/origin/dev-emacs-31-package-vc*'
+          git checkout dev-emacs-31-package-vc
+
       - name: Build Emacs on dev branch
         shell: msys2 {0}
         working-directory: emacs
         run: |
-          git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin \
-              '+refs/heads/dev-emacs-31-package-vc*:refs/remotes/origin/dev-emacs-31-package-vc*'
-          git checkout dev-emacs-31-package-vc
           make -j$(nproc)
 
       - name: Run package-vc-tests
