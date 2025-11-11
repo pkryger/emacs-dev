@@ -47,13 +47,19 @@ jobs:
           git config --global core.eol lf
           git config -l
 
+      - name: Checkout Emacs source on master branch
+        uses: actions/checkout@v4
+        with:
+          repository: pkryger/emacs
+          ref: master
+          path: emacs
+
       - name: Get Emacs cache key
         id: cache-key
         shell: msys2 {0}
+        working-directory: emacs
         run: |
-            echo "key=emacs-master-$(git ls-remote https://github.com/pkryger/emacs.git master \
-                                         | cut -f 1)" \
-                >> "$GITHUB_OUTPUT"
+            echo "key=emacs-master-$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Restore cached Emacs build on master branch
         id: restore-cache
@@ -61,14 +67,6 @@ jobs:
         with:
           path: emacs
           key: ${{ steps.cache-key.outputs.key }}
-
-      - name: Checkout Emacs source on master branch
-        if: steps.restore-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: pkryger/emacs
-          ref: master
-          path: emacs
 
       - name: Build Emacs on master branch
         if: steps.restore-cache.outputs.cache-hit != 'true'
@@ -87,17 +85,12 @@ jobs:
           key: ${{ steps.cache-key.outputs.key }}
 
       - name: Build Emacs source on dev branch
-        uses: actions/checkout@v4
-        run: |
-          cd emacs
-          git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin \
-              '+refs/heads/dev-emacs-31-package-vc*:refs/remotes/origin/dev-emacs-31-package-vc*'
-          git checkout dev-emacs-31-package-vc
-
-      - name: Build Emacs on dev branch
         shell: msys2 {0}
         working-directory: emacs
         run: |
+          git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin \
+              '+refs/heads/dev-emacs-31-package-vc*:refs/remotes/origin/dev-emacs-31-package-vc*'
+          git checkout dev-emacs-31-package-vc
           make -j$(nproc)
 
       - name: Run package-vc-tests
