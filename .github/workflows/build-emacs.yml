@@ -47,20 +47,44 @@ jobs:
           git config --global core.eol lf
           git config -l
 
+      - name: Get Emacs cache key
+        id: cache-key
+        shell: msys2 {0}
+        run: |
+            echo "key=emacs-master-$(git ls-remote https://github.com/pkryger/emacs.git master \
+                                         | cut -f 1)" \
+                >> "$GITHUB_OUTPUT"
+
+      - name: Restore cached Emacs build on master branch
+        id: restore-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: emacs
+          key: ${{ steps.cache-key.outputs.key }}
+
       - name: Checkout Emacs source
+        if: steps.restore-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           repository: pkryger/emacs
           ref: master
           path: emacs
 
-      - name: Build Emacs
+      - name: Build Emacs on master branch
+        if: steps.restore-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         working-directory: emacs
         run: |
           ./autogen.sh
           ./configure --prefix=/mingw64 --without-native-compilation
           make -j$(nproc)
+
+      - name: Cache Emcas build on master branch
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: emacs
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Build Emacs on dev branch
         shell: msys2 {0}
