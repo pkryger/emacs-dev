@@ -86,6 +86,12 @@ jobs:
           path: emacs
           key: ${{ steps.cache-key.outputs.key }}
 
+      - name: Configure git user name and email
+        if: steps.restore-cache.outputs.cache-hit == 'true'
+        run: |
+          git config --global user.email emacs-dev[bot]@users.noreply.github.com
+          git config --global user.name emacs-dev[bot]
+
       - name: Build Emacs source on dev branch
         shell: msys2 {0}
         working-directory: emacs
