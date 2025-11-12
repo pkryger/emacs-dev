@@ -1,0 +1,149 @@
+name: 'Setup Emacs dev build'
+description: 'Setup a development build of Emacs'
+
+inputs:
+  repository:
+    description: >
+      Emacs repository name with owner, for example: octocat/emacs
+
+  path:
+    description: >
+      The value of relative path under ${GITHUB_WORKSPACE} where to check out
+      Emacs source code and perform build.
+
+  base-ref:
+    description: >
+      Use this branch, tag, or SHA to perform base Emacs build.
+    default: 'master'
+
+  dev-ref:
+    description: >
+      Use this branch, tag, or SHA to perform development Emacs build.
+    default: ''
+
+  tmate:
+    description: >
+      When true, run the action with tmate debugging enabled
+      (https://github.com/marketplace/actions/debugging-with-tmate)
+    default: 'false'
+
+  extra-flags:
+    description:
+      Extra flags to pass to configure script.
+    default: '--without-native-compilation'
+
+  cache:
+    description: >
+      When true, cache the base Emacs build.  This is useful to speed up
+      rebuilds on dev-ref.
+    default: 'true'
+
+outputs:
+  cache-key:
+    description: >
+      A key used to cache base Emacs build.
+    value: ${{ steps.cache-key.outputs.key }}
+
+  cache-hit:
+    description: >
+      True when cache hit.
+    value: ${{ steps.cache-cask-packages.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Setup MSYS2
+      id: setup-msys2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          base-devel
+          autoconf
+          automake
+          git
+          texinfo
+          make
+          mingw-w64-x86_64-giflib
+          mingw-w64-x86_64-gnutls
+          mingw-w64-x86_64-harfbuzz
+          mingw-w64-x86_64-jansson
+          mingw-w64-x86_64-libjpeg-turbo
+          mingw-w64-x86_64-libpng
+          mingw-w64-x86_64-libtiff
+          mingw-w64-x86_64-libxml2
+          mingw-w64-x86_64-make
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-tree-sitter
+          mingw-w64-x86_64-zlib
+
+    - name: Configure git
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+        git config -l
+
+    - name: Get Emacs cache key
+      if: ${{ inputs.cache == 'true' }}
+      id: cache-key
+      shell: msys2 {0}
+      run: |
+        echo "key=emacs-${{ inputs.base-ref }}-$(git ls-remote ${{ github.server_url }}/${{ inputs.repository }} ${{ inputs.base-ref }} \
+                                                 | cut -f 1)" \
+            >> "$GITHUB_OUTPUT"
+
+    - name: Restore cached Emacs build on master branch
+      if: ${{ inputs.cache == 'true' }}
+      id: restore-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ steps.cache-key.outputs.key }}
+
+    - name: Checkout Emacs source on base branch
+      if: ${{ steps.restore-cache.outputs.cache-hit != 'true' }}
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.base-ref }}
+        path: ${{ inputs.path }}
+
+    - name: Build Emacs on master branch
+      if: ${{ steps.restore-cache.outputs.cache-hit != 'true' }}
+      shell: msys2 {0}
+      working-directory: ${{ inputs.path }}
+      run: |
+        ./autogen.sh
+        ./configure --prefix=/mingw64 ${{ inputs.extra-flags }}
+        make -j$(nproc)
+
+    - name: Cache Emcas build on master branch
+      if: ${{ inputs.cache == 'true' && steps.restore-cache.outputs.cache-hit != 'true'}}
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ steps.cache-key.outputs.key }}
+
+    - name: Checkout Emacs source on dev branch
+      if: ${{ inputs.dev-ref != '' }}
+      uses: actions/checkout@v4
+      with:
+        clean: false
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.dev-ref }}
+        path: ${{ inputs.path }}
+
+    - name: Build Emacs source on dev branch
+      if: ${{ inputs.dev-ref != '' }}
+      shell: msys2 {0}
+      working-directory: ${{ inputs.path }}
+      run: |
+        make -j$(nproc)
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ always() && inputs.tmate == 'true' }}
+      with:
+        msys2-location: ${{ steps.setup-msys2.outputs.msys2-location }}
+        detached: true
