@@ -81,18 +81,22 @@ runs:
     - name: Configure git
       shell: pwsh
       run: |
+        echo "::group::Run git config"
         git config --global core.autocrlf false
         git config --global core.eol lf
         git config -l
+        echo "::endgroup::"
 
     - name: Get Emacs cache key
       if: ${{ inputs.cache == 'true' }}
       id: cache-key
       shell: msys2 {0}
       run: |
+        echo "::group::Get cache key"
         echo "key=emacs-${{ inputs.base-ref }}-$(git ls-remote ${{ github.server_url }}/${{ inputs.repository }} ${{ inputs.base-ref }} \
                                                  | cut -f 1)" \
             >> "$GITHUB_OUTPUT"
+        echo "::endgroup::"
 
     - name: Restore cached Emacs build on master branch
       if: ${{ inputs.cache == 'true' }}
@@ -115,9 +119,15 @@ runs:
       shell: msys2 {0}
       working-directory: ${{ inputs.path }}
       run: |
+        echo "::group::Run autogen.sh"
         ./autogen.sh
+        echo "::endgroup::"
+        echo "::group::Run configure"
         ./configure --prefix=/mingw64 ${{ inputs.extra-flags }}
+        echo "::endgroup::"
+        echo "::group::Run make"
         make -j$(nproc)
+        echo "::endgroup::"
 
     - name: Cache Emcas build on master branch
       if: ${{ inputs.cache == 'true' && steps.restore-cache.outputs.cache-hit != 'true'}}
@@ -140,7 +150,9 @@ runs:
       shell: msys2 {0}
       working-directory: ${{ inputs.path }}
       run: |
+        echo "::group::Run make"
         make -j$(nproc)
+        echo "::endgroup::"
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
