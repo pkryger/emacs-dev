@@ -24,6 +24,7 @@ jobs:
           repository: pkryger/emacs
           path: emacs
           dev-ref: dev-emacs-31-package-vc
+          tmate: ${{ inputs.tmate }}
 
       - name: Checkout helper scripts
         uses: actions/checkout@v4
@@ -41,9 +42,3 @@ jobs:
               -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' \
               -eval '(vc-git-command nil 0 nil "config" "--global" "branch.autosetupmerge" "true")' \
               -f ert-run-tests-batch-and-exit
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        with:
-          msys2-location: ${{ steps.setup-msys2.outputs.msys2-location }}
