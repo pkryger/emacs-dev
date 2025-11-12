@@ -79,6 +79,7 @@ runs:
           mingw-w64-x86_64-zlib
 
     - name: Configure git
+      shell: pwsh
       run: |
         git config --global core.autocrlf false
         git config --global core.eol lf
