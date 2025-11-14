@@ -37,6 +37,7 @@ jobs:
         run: |
           ./src/emacs -batch \
                -l "${{ github.workspace }}\emacs-dev\quote-upstream.el" \
+               -l "${{ github.workspace }}\emacs-dev\perl-makeinfo.el" \
                -l ../test/lisp/package-vc-tests.el \
               -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' \
               -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' \
