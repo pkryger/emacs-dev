@@ -29,15 +29,15 @@ jobs:
       - name: Checkout helper scripts
         uses: actions/checkout@v4
         with:
-          path: emacs-dev
+          path: setup-emacs-dev
 
       - name: Run package-vc-tests
         shell: msys2 {0}
         working-directory: emacs
         run: |
           ./src/emacs -batch \
-               -l "${{ github.workspace }}\emacs-dev\quote-upstream.el" \
-               -l "${{ github.workspace }}\emacs-dev\perl-makeinfo.el" \
+               -l "${{ github.workspace }}\setup-emacs-dev\quote-upstream.el" \
+               -l "${{ github.workspace }}\setup-emacs-dev\perl-makeinfo.el" \
                -l ../test/lisp/package-vc-tests.el \
               -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' \
               -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' \
