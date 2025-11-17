@@ -93,8 +93,11 @@ runs:
       shell: msys2 {0}
       run: |
         echo "::group::Get cache key"
-        echo "key=emacs-${{ inputs.base-ref }}-$(git ls-remote ${{ github.server_url }}/${{ inputs.repository }} ${{ inputs.base-ref }} \
-                                                 | cut -f 1)" \
+        echo "key=$('${{ github.action_path }}\get-emacs-cache-key.sh' \
+                        ${{ runner.os }} \
+                        ${{ github.server_url }} \
+                        ${{ inputs.repository }} \
+                        ${{ inputs.base-ref }})" \
             >> "$GITHUB_OUTPUT"
         echo "::endgroup::"
 
