@@ -74,6 +74,7 @@ runs:
           mingw-w64-x86_64-libtiff
           mingw-w64-x86_64-libxml2
           mingw-w64-x86_64-make
+          mingw-w64-x86_64-texinfo
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-tree-sitter
           mingw-w64-x86_64-zlib
