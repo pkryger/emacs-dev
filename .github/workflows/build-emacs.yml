@@ -1,30 +1,45 @@
-name: Build Emacs on Windows 2025
+name: Build Emacs (dev-emacs-31-package-vc)
 
 on:
   workflow_dispatch:
     inputs:
-      tmate:
+      tmate-windows:
         type: boolean
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: '[Windows] Run the build with tmate debugging enabled'
+        required: false
+        default: false
+      tmate-linux:
+        type: boolean
+        description: '[Linux] Run the build with tmate debugging enabled'
+        required: false
+        default: false
+      tmate-macos:
+        type: boolean
+        description: '[macOS] Run the build with tmate debugging enabled'
         required: false
         default: false
   push:
     branches: [ main ]
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
   pull_request:
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-2025
-    name: Build Emacs (Windows 2025)
+    name: Build Emacs (windows-2025)
 
     steps:
       - name: Setup Emacs dev build
+        id: setup-emacs-dev
         uses: pkryger/emacs-dev@main
         with:
-          repository: pkryger/emacs
-          path: emacs
           dev-ref: dev-emacs-31-package-vc
-          tmate: ${{ inputs.tmate }}
+          tmate: ${{ inputs.tmate-windows }}
 
       - name: Checkout helper scripts
         uses: actions/checkout@v4
@@ -33,12 +48,41 @@ jobs:
 
       - name: Run package-vc-tests
         shell: msys2 {0}
-        working-directory: emacs
+        working-directory: ${{ steps.setup-emacs-dev.outputs.path }}
         run: |
           ./src/emacs -batch \
-               -l "${{ github.workspace }}\setup-emacs-dev\quote-upstream.el" \
-               -l ../test/lisp/package-vc-tests.el \
-              -eval '(vc-git-command nil 0 nil "config" "--global" "user.email" "emacs-dev[bot]@users.noreply.github.com")' \
-              -eval '(vc-git-command nil 0 nil "config" "--global" "user.name" "emacs-dev[bot]")' \
-              -eval '(vc-git-command nil 0 nil "config" "--global" "branch.autosetupmerge" "true")' \
+              -l "${{ github.workspace }}\setup-emacs-dev\quote-upstream.el" \
+              -l "${{ github.workspace }}\setup-emacs-dev\configure-git.el" \
+              -l ../test/lisp/package-vc-tests.el \
+              -f ert-run-tests-batch-and-exit
+
+  build-non-windows:
+    runs-on: ${{ matrix.os }}
+    name: Build Emacs (${{ matrix.os }})
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+
+    steps:
+      - name: Setup Emacs dev build
+        id: setup-emacs-dev
+        uses: pkryger/emacs-dev@main
+        with:
+          dev-ref: dev-emacs-31-package-vc
+          tmate: >-
+            ${{ (runner.os == 'Linux' && inputs.tmate-linux)
+                || (runner.os == 'macOS' && inputs.tmate-macos) }}
+
+      - name: Checkout helper scripts
+        uses: actions/checkout@v4
+        with:
+          path: setup-emacs-dev
+
+      - name: Run package-vc-tests
+        working-directory: ${{ steps.setup-emacs-dev.outputs.path }}
+        run: |
+          ./src/emacs -batch \
+              -l "${{ github.workspace }}/setup-emacs-dev/configure-git.el" \
+              -l ../test/lisp/package-vc-tests.el \
               -f ert-run-tests-batch-and-exit

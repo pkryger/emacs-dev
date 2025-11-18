@@ -4,45 +4,72 @@ description: 'Setup a development build of Emacs'
 inputs:
   repository:
     description: >
-      Emacs repository name with owner, for example: octocat/emacs
+      Emacs repository name with owner, for example: octocat/emacs.
+    default: '${{ github.repository_owner }}/emacs'
 
   path:
     description: >
       The value of relative path under ${GITHUB_WORKSPACE} where to check out
       Emacs source code and perform build.
+    default: emacs
 
   base-ref:
     description: >
       Use this branch, tag, or SHA to perform base Emacs build.
-    default: 'master'
+    default: master
 
   dev-ref:
     description: >
       Use this branch, tag, or SHA to perform development Emacs build.
-    default: ''
 
   tmate:
     description: >
       When true, run the action with tmate debugging enabled
       (https://github.com/marketplace/actions/debugging-with-tmate)
-    default: 'false'
+    default: false
 
   extra-flags:
     description:
-      Extra flags to pass to configure script.
-    default: '--without-native-compilation'
+      Extra flags to pass to configure script, one argument per line.
+    default: |-
+      --without-native-compilation
+      --with-gnutls
+      --with-modules
 
   cache:
     description: >
-      When true, cache the base Emacs build.  This is useful to speed up
+      When true, cache the base Emacs build.  Enabling cache should speed up
       rebuilds on dev-ref.
-    default: 'true'
+    default: true
 
 outputs:
+  path:
+    description: >
+      A path used to build Emacs.
+    value: ${{ inputs.path }}
+
+  repository:
+    description: >
+      Name of the repository used to build Emacs.
+    value: ${{ inputs.repository }}
+
+  ref:
+    description: >
+      The branch, tag, or SHA used to build Emacs.
+    value: >-
+      ${{ inputs.dev-ref != ''
+          && steps.checkout-dev-branch.outputs.ref
+          || ( inputs.cache
+               && steps.checkout-base-branch.outputs.ref
+               || inputs.base-ref ) }}
+
   cache-key:
     description: >
       A key used to cache base Emacs build.
-    value: ${{ steps.cache-key.outputs.key }}
+    value: >-
+      ${{ runner.os == 'Windows'
+          && steps.cache-key-windows.outputs.key
+          || steps.cache-key-linux-macos.outputs.key }}
 
   cache-hit:
     description: >
@@ -52,9 +79,76 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install dependencies on Linux
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          autoconf \
+          automake \
+          build-essential \
+          libgccjit-14-dev \
+          libgif-dev \
+          libgnutls28-dev \
+          libgmp-dev \
+          libgtk-3-dev \
+          libharfbuzz-dev \
+          libjansson-dev \
+          libjpeg-dev \
+          libncurses-dev \
+          libpng-dev \
+          libsqlite3-dev \
+          libtiff-dev \
+          libtree-sitter-dev \
+          libwebp-dev \
+          libxpm-dev \
+          texinfo \
+          tree-sitter-cli
 
-    - name: Setup MSYS2
+    - name: Install dependencies on macOS
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        brew update
+        brew install \
+          autoconf \
+          automake \
+          awk \
+          coreutils \
+          giflib \
+          gcc \
+          gmp \
+          gnu-sed \
+          gnu-tar \
+          gnutls \
+          jansson \
+          libjpeg \
+          libgccjit \
+          libpng \
+          librsvg \
+          libtiff \
+          libxml2 \
+          libxpm \
+          m4 \
+          make \
+          pkg-config \
+          sqlite \
+          texinfo \
+          tree-sitter \
+          webp \
+          zlib \
+          xz
+
+    - name: Configure git
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        ${{ github.action_path }}\configure-git.ps1
+
+    - name: Setup MSYS2 and install dependencies on Windows
       id: setup-msys2
+      if: ${{ runner.os == 'Windows' }}
       uses: msys2/setup-msys2@v2
       with:
         update: true
@@ -67,50 +161,67 @@ runs:
           make
           mingw-w64-x86_64-giflib
           mingw-w64-x86_64-gnutls
+          mingw-w64-x86_64-gmp
           mingw-w64-x86_64-harfbuzz
           mingw-w64-x86_64-jansson
           mingw-w64-x86_64-libjpeg-turbo
           mingw-w64-x86_64-libpng
+          mingw-w64-x86_64-librsvg
           mingw-w64-x86_64-libtiff
+          mingw-w64-x86_64-libtree-sitter
+          mingw-w64-x86_64-libwebp
           mingw-w64-x86_64-libxml2
+          mingw-w64-x86_64-xpm-nox
           mingw-w64-x86_64-make
+          mingw-w64-x86_64-sqlite3
           mingw-w64-x86_64-texinfo
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-tree-sitter
           mingw-w64-x86_64-zlib
 
-    - name: Configure git
-      shell: pwsh
-      run: |
-        echo "::group::Run git config"
-        git config --global core.autocrlf false
-        git config --global core.eol lf
-        git config -l
-        echo "::endgroup::"
-
-    - name: Get Emacs cache key
-      if: ${{ inputs.cache == 'true' }}
-      id: cache-key
+    - name: Get Emacs cache key on Windows
+      if: >-
+        ${{ runner.os == 'Windows'
+            && inputs.cache == 'true' }}
+      id: cache-key-windows
       shell: msys2 {0}
       run: |
-        echo "::group::Get cache key"
-        echo "key=$('${{ github.action_path }}\get-emacs-cache-key.sh' \
+        echo "key=$('${{ github.action_path }}\get-cache-key.sh' \
                         ${{ runner.os }} \
                         ${{ github.server_url }} \
                         ${{ inputs.repository }} \
-                        ${{ inputs.base-ref }})" \
+                        ${{ inputs.base-ref }} \
+                        "${{ inputs.extra-flags }}")" \
             >> "$GITHUB_OUTPUT"
-        echo "::endgroup::"
 
-    - name: Restore cached Emacs build on master branch
+    - name: Get Emacs cache key on Linux/macOS
+      if: >-
+        ${{ runner.os != 'Windows'
+            && inputs.cache == 'true' }}
+      id: cache-key-linux-macos
+      shell: bash
+      run: |
+        echo "key=$(${{ github.action_path}}/get-cache-key.sh \
+                        ${{ runner.os }} \
+                        ${{ github.server_url }} \
+                        ${{ inputs.repository }} \
+                        ${{ inputs.base-ref }} \
+                        "${{ inputs.extra-flags }}")" \
+            >> "$GITHUB_OUTPUT"
+
+    - name: Restore cached Emacs build on base branch
       if: ${{ inputs.cache == 'true' }}
       id: restore-cache
       uses: actions/cache/restore@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ steps.cache-key.outputs.key }}
+        key: >
+          ${{ runner.os == 'Windows'
+              && steps.cache-key-windows.outputs.key
+              || steps.cache-key-linux-macos.outputs.key }}
 
     - name: Checkout Emacs source on base branch
+      id: checkout-base-branch
       if: ${{ steps.restore-cache.outputs.cache-hit != 'true' }}
       uses: actions/checkout@v4
       with:
@@ -118,29 +229,40 @@ runs:
         ref: ${{ inputs.base-ref }}
         path: ${{ inputs.path }}
 
-    - name: Build Emacs on master branch
-      if: ${{ steps.restore-cache.outputs.cache-hit != 'true' }}
+    - name: Configure and build Emacs on base branch on Windows
+      if: >-
+        ${{ runner.os == 'Windows'
+            && steps.restore-cache.outputs.cache-hit != 'true' }}
       shell: msys2 {0}
       working-directory: ${{ inputs.path }}
       run: |
-        echo "::group::Run autogen.sh"
-        ./autogen.sh
-        echo "::endgroup::"
-        echo "::group::Run configure"
-        ./configure --prefix=/mingw64 ${{ inputs.extra-flags }}
-        echo "::endgroup::"
-        echo "::group::Run make"
-        make -j$(nproc)
-        echo "::endgroup::"
+        '${{ github.action_path}}\configure-build-emacs.sh' \
+            "${{ inputs.extra-flags }}"
+
+    - name: Configure and build  Emacs on base branch on Linux/macOS
+      if: >-
+        ${{ runner.os != 'Windows'
+            && steps.restore-cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        ${{ github.action_path}}/configure-build-emacs.sh \
+            "${{ inputs.extra-flags }}"
 
     - name: Cache Emcas build on master branch
-      if: ${{ inputs.cache == 'true' && steps.restore-cache.outputs.cache-hit != 'true'}}
+      if: >-
+        ${{ inputs.cache == 'true'
+            && steps.restore-cache.outputs.cache-hit != 'true'}}
       uses: actions/cache/save@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ steps.cache-key.outputs.key }}
+        key: >
+          ${{ runner.os == 'Windows'
+              && steps.cache-key-windows.outputs.key
+              || steps.cache-key-linux-macos.outputs.key }}
 
     - name: Checkout Emacs source on dev branch
+      id: checkout-dev-branch
       if: ${{ inputs.dev-ref != '' }}
       uses: actions/checkout@v4
       with:
@@ -149,18 +271,29 @@ runs:
         ref: ${{ inputs.dev-ref }}
         path: ${{ inputs.path }}
 
-    - name: Build Emacs source on dev branch
-      if: ${{ inputs.dev-ref != '' }}
+    - name: Build Emacs source on dev branch on Windows
+      if: >-
+        ${{ runner.os == 'Windows'
+            && inputs.dev-ref != '' }}
       shell: msys2 {0}
       working-directory: ${{ inputs.path }}
       run: |
-        echo "::group::Run make"
-        make -j$(nproc)
-        echo "::endgroup::"
+        '${{ github.action_path}}\build-emacs.sh'
+
+    - name: Build Emacs source on dev branch on Linux/macOS
+      if: >-
+        ${{ runner.os != 'Windows'
+            && inputs.dev-ref != '' }}
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        ${{ github.action_path}}/build-emacs.sh
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ always() && inputs.tmate == 'true' }}
+      if: >-
+        ${{ always()
+            && inputs.tmate == 'true' }}
       with:
         msys2-location: ${{ steps.setup-msys2.outputs.msys2-location }}
         detached: true
