@@ -1,0 +1,33 @@
+name: Debug Emacs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-emacs-prebuilt-30-2:
+    runs-on: windows-2025
+    steps:
+      - uses: jcs090218/setup-emacs-windows@master
+        with:
+          version: 30.2
+
+      - uses: mxschmitt/action-tmate@v3
+
+
+  debug-emacs-30-2-50:
+    runs-on: windows-2025
+    steps:
+      - uses: pkryger/setup-emacs-dev@main
+        with:
+          repository: emacs-mirror/emacs
+          base-ref: emacs-30
+          tmate: true
+
+
+
+  debug-emacs-31-0-90:
+    runs-on: windows-2025
+    steps:
+      - uses: pkryger/setup-emacs-dev@main
+        with:
+          tmate: true
