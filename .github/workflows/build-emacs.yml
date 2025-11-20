@@ -22,10 +22,12 @@ on:
     branches: [ main ]
     paths-ignore:
     - '**.md'
+    - '**.org'
     - '.gitignore'
   pull_request:
     paths-ignore:
     - '**.md'
+    - '**.org'
     - '.gitignore'
 
 jobs:
