@@ -81,9 +81,9 @@ inputs:
       (https://github.com/marketplace/actions/debugging-with-tmate)
     default: false
 
-  extra-flags:
-    description:
-      Extra flags to pass to configure script, one argument per line.
+  configure-arguments:
+    description: >
+      Arguments to pass to configure script, one argument per line.
     default: |-
       --without-native-compilation
       --with-gnutls

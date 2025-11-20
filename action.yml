@@ -28,9 +28,9 @@ inputs:
       (https://github.com/marketplace/actions/debugging-with-tmate)
     default: false
 
-  extra-flags:
-    description:
-      Extra flags to pass to configure script, one argument per line.
+  configure-arguments:
+    description: >
+      Arguments to pass to configure script, one argument per line.
     default: |-
       --without-native-compilation
       --with-gnutls
@@ -191,7 +191,7 @@ runs:
                         ${{ github.server_url }} \
                         ${{ inputs.repository }} \
                         ${{ inputs.base-ref }} \
-                        "${{ inputs.extra-flags }}")" \
+                        "${{ inputs.configure-arguments }}")" \
             >> "$GITHUB_OUTPUT"
 
     - name: Get Emacs cache key on Linux/macOS
@@ -206,7 +206,7 @@ runs:
                         ${{ github.server_url }} \
                         ${{ inputs.repository }} \
                         ${{ inputs.base-ref }} \
-                        "${{ inputs.extra-flags }}")" \
+                        "${{ inputs.configure-arguments }}")" \
             >> "$GITHUB_OUTPUT"
 
     - name: Restore cached Emacs build on base branch
@@ -237,7 +237,7 @@ runs:
       working-directory: ${{ inputs.path }}
       run: |
         '${{ github.action_path}}\configure-build-emacs.sh' \
-            "${{ inputs.extra-flags }}"
+            "${{ inputs.configure-arguments }}"
 
     - name: Configure and build  Emacs on base branch on Linux/macOS
       if: >-
@@ -247,7 +247,7 @@ runs:
       working-directory: ${{ inputs.path }}
       run: |
         ${{ github.action_path}}/configure-build-emacs.sh \
-            "${{ inputs.extra-flags }}"
+            "${{ inputs.configure-arguments }}"
 
     - name: Cache Emcas build on master branch
       if: >-
