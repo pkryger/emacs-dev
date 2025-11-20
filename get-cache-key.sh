@@ -16,6 +16,8 @@ configure_arguments=$5
 repo_sha=$(git ls-remote "${repository}" "${base_ref}" \
           | cut -f 1)
 
+echo "Emacs repository SHA: ${repo_sha}" >&2
+
 if [[ -z "${repo_sha}" ]]; then
     echo "Cannot get commit ID for reference ${base_ref} from ${repository}" >&2
     exit 2
