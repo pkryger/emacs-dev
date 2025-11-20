@@ -1,0 +1,151 @@
+#+title: setup-emacs-dev — GitHub Action for Building Emacs from Source
+#+author: Przemysław Kryger
+#+language: en
+#+startup: showeverything
+#+startup: literallinks
+#+options: toc:nil num:nil author:nil
+
+** Overview
+The =setup-emacs-dev= action provides a simple facility for obtaining a freshly
+built copy of Emacs directly from a user-selected branch of a user-selected
+Emacs repository.  Its purpose is narrowly defined: it builds Emacs, and does
+not attempt to install, package, or configure the resulting binaries for use in
+a typical package testing CI workflow.
+
+This action may be useful for users wishing to confirm build-ability of their
+development branches, or for those who require a build artefact constructed in
+a reproducible GitHub Actions environment, for example for testing patched
+Emacs source code in conjunction within some workflow.  The action functions on
+all GitHub-hosted runners: GNU/Linux, Microsoft Windows, and macOS.
+
+** Branch Selection
+Two kinds of branches may be specified:
+- Base branch — typically =master= or any other branch, tag, or SHA.
+- Development branch — a branch, tag, or SHA containing work-in-progress
+  modifications or experimental code.
+The action will check out the selected base branch and proceed to build Emacs
+using the system’s native build tools followed by a check out and build of the
+development branch.
+
+** Basic Usage
+The following example demonstrates a minimal configuration using the
+=setup-emacs-dev= action to build Emacs from a =dev-branch= branch that has
+been spoon off the =master= branch, in the workflow owner's =emacs= repository
+fork on GitHub.
+
+#+begin_src yaml
+name: Build Emacs
+on:
+  push:
+  pull_request:
+jobs:
+  build-emacs:
+    runs-on: ubuntu-latest
+  steps:
+    - name: Build Emacs from dev-branch
+      id: build-emacs-dev-branch
+      uses: pkryger/setup-emacs-dev@main
+      with:
+        dev-ref: dev-branch
+#+end_src
+The build artifacts will be available in the ~${{
+steps.build-emacs-dev-branch.outputs.path }}~ which is relative path to
+workflow’s workspace directory, but no installation step is performed.
+
+** Usage
+#+begin_src yaml
+inputs:
+  repository:
+    description: >
+      Emacs repository name with owner, for example: octocat/emacs.
+    default: '${{ github.repository_owner }}/emacs'
+
+  path:
+    description: >
+      The value of relative path under ${GITHUB_WORKSPACE} where to check out
+      Emacs source code and perform build.
+    default: emacs
+
+  base-ref:
+    description: >
+      Use this branch, tag, or SHA to perform base Emacs build.
+    default: master
+
+  dev-ref:
+    description: >
+      Use this branch, tag, or SHA to perform development Emacs build.
+
+  tmate:
+    description: >
+      When true, run the action with tmate debugging enabled
+      (https://github.com/marketplace/actions/debugging-with-tmate)
+    default: false
+
+  extra-flags:
+    description:
+      Extra flags to pass to configure script, one argument per line.
+    default: |-
+      --without-native-compilation
+      --with-gnutls
+      --with-modules
+
+  cache:
+    description: >
+      When true, cache the base Emacs build.  Enabling cache should speed up
+      rebuilds on dev-ref.
+    default: true
+
+outputs:
+  path:
+    description: >
+      A path used to build Emacs.
+    value: ${{ inputs.path }}
+
+  repository:
+    description: >
+      Name of the repository used to build Emacs.
+    value: ${{ inputs.repository }}
+
+  ref:
+    description: >
+      The branch, tag, or SHA used to build Emacs.
+    value: >-
+      ${{ inputs.dev-ref != ''
+          && steps.checkout-dev-branch.outputs.ref
+          || ( inputs.cache
+               && steps.checkout-base-branch.outputs.ref
+               || inputs.base-ref ) }}
+
+  cache-key:
+    description: >
+      A key used to cache base Emacs build.
+    value: >-
+      ${{ runner.os == 'Windows'
+          && steps.cache-key-windows.outputs.key
+          || steps.cache-key-linux-macos.outputs.key }}
+
+  cache-hit:
+    description: >
+      True when cache hit.
+    value: ${{ steps.cache-cask-packages.outputs.cache-hit }}
+#+end_src
+
+** Comparison with Other Emacs Setup Actions
+Users wishing to test packages or configure Emacs for use within their
+workflows should note that this action does not install Emacs on the
+runner. For these more common use cases the following actions may be
+more suitable:
+- Purcell’s [[https://github.com/purcell/setup-emacs][=setup-emacs=]]
+- jcs090218’s [[https://github.com/jcs090218/setup-emacs][=setup-emacs=]]
+- kiennq’s [[https://github.com/kiennq/emacs-build][=emacs-build=]]
+These actions provide ready-to-use Emacs installations tailored for
+package testing and CI usage.
+
+** Feedback and Contributions
+Users are encouraged to report issues or propose improvements via the
+project’s GitHub issue tracker. Contributions are welcome.
+
+** License
+This package is licensed under the [[https://www.gnu.org/licenses/gpl-3.0.en.html][GPLv3 License]].
+
+# LocalWords: SHA
