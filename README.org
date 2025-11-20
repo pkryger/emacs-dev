@@ -6,6 +6,9 @@
 #+options: toc:nil num:nil author:nil
 
 ** Overview
+:properties:
+:custom_id: overview
+:end:
 The =setup-emacs-dev= action provides a simple facility for obtaining a freshly
 built copy of Emacs directly from a user-selected branch of a user-selected
 Emacs repository.  Its purpose is narrowly defined: it builds Emacs, and does
@@ -15,19 +18,31 @@ a typical package testing CI workflow.
 This action may be useful for users wishing to confirm build-ability of their
 development branches, or for those who require a build artefact constructed in
 a reproducible GitHub Actions environment, for example for testing patched
-Emacs source code in conjunction within some workflow.  The action functions on
-all GitHub-hosted runners: GNU/Linux, Microsoft Windows, and macOS.
+Emacs source code in conjunction within some workflow.  See
+[[#comparison-with=other-emacs-setup-actions][below]] for comparison with other
+GitHub actions.
+
+The action functions on all GitHub-hosted runners: GNU/Linux, Microsoft
+Windows, and macOS.
 
 ** Branch Selection
+:properties:
+:custom_id: branch-selection
+:end:
 Two kinds of branches may be specified:
-- Base branch — typically =master= or any other branch, tag, or SHA.
+- Base branch — typically =master= (which is the default) or any other branch,
+  tag, or SHA.
 - Development branch — a branch, tag, or SHA containing work-in-progress
   modifications or experimental code.
 The action will check out the selected base branch and proceed to build Emacs
-using the system’s native build tools followed by a check out and build of the
-development branch.
+using the system’s native build tools and cache the result (unless opted out,
+see [[#usage][Usage]]) followed by a check out and build of the development
+branch.
 
 ** Basic Usage
+:properties:
+:custom_id: basic-usage
+:end:
 The following example demonstrates a minimal configuration using the
 =setup-emacs-dev= action to build Emacs from a =dev-branch= branch that has
 been spoon off the =master= branch, in the workflow owner's =emacs= repository
@@ -48,11 +63,17 @@ jobs:
       with:
         dev-ref: dev-branch
 #+end_src
-The build artifacts will be available in the ~${{
-steps.build-emacs-dev-branch.outputs.path }}~ which is relative path to
+The build artifacts will be available in the
+~${{ steps.build-emacs-dev-branch.outputs.path }}~ which is relative path to
 workflow’s workspace directory, but no installation step is performed.
 
+N.B. By default Build Emacs without native compilation.  Call the action with
+custom ~configure-arguments~ to enable native compilation.
+
 ** Usage
+:properties:
+:custom_id: usage
+:end:
 #+begin_src yaml
 inputs:
   repository:
@@ -131,9 +152,12 @@ outputs:
 #+end_src
 
 ** Comparison with Other Emacs Setup Actions
+:properties:
+:custom_id: comparison-with=other-emacs-setup-actions
+:end:
 Users wishing to test packages or configure Emacs for use within their
 workflows should note that this action does not install Emacs on the
-runner. For these more common use cases the following actions may be
+runner.  For these more common use cases the following actions may be
 more suitable:
 - Purcell’s [[https://github.com/purcell/setup-emacs][=setup-emacs=]]
 - jcs090218’s [[https://github.com/jcs090218/setup-emacs][=setup-emacs=]]
@@ -142,10 +166,16 @@ These actions provide ready-to-use Emacs installations tailored for
 package testing and CI usage.
 
 ** Feedback and Contributions
+:properties:
+:custom_id: feedback-and-contributions
+:end:
 Users are encouraged to report issues or propose improvements via the
 project’s GitHub issue tracker. Contributions are welcome.
 
 ** License
+:properties:
+:custom_id: license
+:end:
 This package is licensed under the [[https://www.gnu.org/licenses/gpl-3.0.en.html][GPLv3 License]].
 
 # LocalWords: SHA
