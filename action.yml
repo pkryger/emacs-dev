@@ -151,7 +151,7 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       uses: msys2/setup-msys2@v2
       with:
-        update: true
+        release: false
         install: >-
           base-devel
           autoconf
