@@ -140,12 +140,6 @@ runs:
           zlib \
           xz
 
-    - name: Configure git
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
-      run: |
-        ${{ github.action_path }}\configure-git.ps1
-
     - name: Setup MSYS2 and install dependencies on Windows
       id: setup-msys2
       if: ${{ runner.os == 'Windows' }}
@@ -178,6 +172,13 @@ runs:
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-tree-sitter
           mingw-w64-x86_64-zlib
+
+    - name: Configure git
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        & ${{ github.action_path }}\configure-git.ps1 `
+           -MSYS2Location ${{ steps.setup-msys2.outputs.msys2-location }}
 
     - name: Get Emacs cache key on Windows
       if: >-
