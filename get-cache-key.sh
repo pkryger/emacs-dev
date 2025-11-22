@@ -29,7 +29,7 @@ sha=$(printf "%s\n%s" "${repo_sha}" "${configure_arguments}" \
           | sha256sum \
           | cut -d ' ' -f 1)
 
-key="emacs-${runner_os}-${base_ref}-${sha}"
+key="setup-emacs-dev-${runner_os}-${base_ref}-${sha}"
 echo "Key: ${key}" >&2
 echo "::engroup::" >&2
 
