@@ -4,7 +4,7 @@ param(
 )
 
 echo "::group::Configure git line endings"
-git config --global core.autocrlf inherit
+git config --global core.autocrlf input
 git config -l
 echo "::endgroup::"
 
