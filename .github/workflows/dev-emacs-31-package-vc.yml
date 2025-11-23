@@ -1,27 +1,26 @@
-name: Build Emacs (dev-emacs-31-package-vc)
+name: Build and Test dev-emacs-31-package-vc
 
 on:
   workflow_dispatch:
     inputs:
       tmate-windows:
         type: boolean
-        description: '[Windows] Run the build with tmate debugging enabled'
+        description: '[Windows] Enable tmate'
         required: false
         default: false
       tmate-linux:
         type: boolean
-        description: '[Linux] Run the build with tmate debugging enabled'
+        description: '[Linux] Enable tmate'
         required: false
         default: false
       tmate-macos:
         type: boolean
-        description: '[macOS] Run the build with tmate debugging enabled'
+        description: '[macOS] Enable tmate'
         required: false
         default: false
   push:
     branches: [ main ]
     paths-ignore:
-      - '.github/workflows/debug.yml'
       - '**.md'
       - '**.org'
       - '.gitignore'
@@ -34,7 +33,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
-    name: Build Emacs (${{ matrix.os }})
+    name: Build and Test dev-emacs-31-package-vc (${{ matrix.os }})
 
     strategy:
       matrix:
