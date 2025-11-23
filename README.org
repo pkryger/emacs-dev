@@ -202,9 +202,9 @@ Users wishing to test packages or configure Emacs for use within their
 workflows should note that this action does not install Emacs on the
 runner.  For these more common use cases the following actions may be
 more suitable:
-- Purcell’s [[https://github.com/purcell/setup-emacs][=setup-emacs=]]
-- jcs090218’s [[https://github.com/jcs090218/setup-emacs][=setup-emacs=]]
-- kiennq’s [[https://github.com/kiennq/emacs-build][=emacs-build=]]
+- Purcell’s [[https://github.com/purcell/setup-emacs][setup-emacs]]
+- jcs090218’s [[https://github.com/jcs090218/setup-emacs][setup-emacs]]
+- kiennq’s [[https://github.com/kiennq/emacs-build][emacs-build]]
 These actions provide ready-to-use Emacs installations tailored for
 package testing and CI usage.
 
