@@ -290,6 +290,18 @@ runs:
       run: |
         ${{ github.action_path}}/build-emacs.sh
 
+    - name: Setup shell wrapper on Windows
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        & ${{ github.action_path }}\setup-shell-wrapper.ps1
+
+    - name: Setup custom shell on Linux/macOS
+      if: ${{ runner.os != 'Windows' }}
+      shell: bash
+      run: |
+        ${{ github.action_path }}/setup-shell-wrapper.sh
+
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: >-

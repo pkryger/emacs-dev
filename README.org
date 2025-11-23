@@ -36,8 +36,8 @@ Two kinds of branches may be specified:
   modifications or experimental code.
 The action will check out the selected base branch and proceed to build Emacs
 using the system’s native build tools and cache the result (unless opted out,
-see [[#usage][Usage]]) followed by a check out and build of the development
-branch.
+see [[#action-inputs-and-outputs-reference][Inputs and Outputs Reference]])
+followed by a check out and build of the development branch.
 
 ** Basic Usage
 :properties:
@@ -70,9 +70,52 @@ workflow’s workspace directory, but no installation step is performed.
 N.B. By default Build Emacs without native compilation.  Call the action with
 custom ~configure-arguments~ to enable native compilation.
 
-** Usage
+** Run Tests on a Development Branch
 :properties:
-:custom_id: usage
+:custom_id: run-tests-on-a-development-branch
+:end:
+It is possible to run tests on a development branch.  The following example
+demonstrates how to achieve that on all supported systems on GitHub.
+
+#+begin_src yaml
+name: Run tests
+on:
+  push:
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    steps:
+      - name: Setup Emacs dev build
+        id: setup-emacs-dev
+        uses: pkryger/emacs-dev@main
+        with:
+          dev-ref: dev-branch
+      - name: Run tests
+        shell: setup-emacs-dev-bash {0}
+        working-directory: ${{ steps.setup-emacs-dev.outputs.path }}
+        run: |
+          ./src/emacs -batch \
+              -l path/to/my-tests-file.el \
+              -f ert-run-tests-batch-and-exit
+#+end_src
+
+N.B. This action uses a `setup-emacs-dev-bash` as a shell argument.  This is a
+wrapper installed by this action that provides a single named entry point for a
+`bash` shell.  While it is possible to specify `bash` as a `shell` in a user
+workflow step, that, on a Windows runner, will use bash shell included with Git
+for Windows (see
+[[https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#defaultsrunshell][reference]]).
+In such a case no MSYS2 MinGW installed programs are available in `PATH`.  In
+contrast, with `setup-emacs-dev-bash` the step execution occurs within MSYS2
+provided `bash` shell.
+
+** Action Inputs and Outputs Reference
+:properties:
+:custom_id: action-inputs-and-outputs-reference
 :end:
 #+begin_src yaml
 inputs:
