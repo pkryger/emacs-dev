@@ -76,6 +76,11 @@ outputs:
       True when cache hit.
     value: ${{ steps.cache-cask-packages.outputs.cache-hit }}
 
+  msys2-location:
+    description: >
+      The absolute path of the MSYS2 installation location.
+    value: ${{ steps.setup-msys2.outputs.msys2-location }}
+
 runs:
   using: 'composite'
   steps:

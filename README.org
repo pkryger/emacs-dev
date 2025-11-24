@@ -179,6 +179,10 @@ outputs:
   cache-hit:
     description: >
       True when cache hit.
+
+  msys2-location:
+    description: >
+      The absolute path of the MSYS2 installation location.
 #+end_src
 
 ** Comparison with Other Emacs Setup Actions
