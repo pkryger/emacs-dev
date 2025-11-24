@@ -14,7 +14,7 @@ if (-Not (Test-Path $linkDir)) {
     New-Item -ItemType Directory -Path $linkDir -Force | Out-Null
 }
 
-$target = "C:\Program Files\Git\bin\git.exe"
+$target = (Get-Command git).Path
 $link   = Join-Path $linkDir "git.exe"
 
 New-Item -ItemType SymbolicLink -Path $link -Target $target
