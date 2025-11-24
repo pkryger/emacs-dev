@@ -162,36 +162,23 @@ inputs:
 outputs:
   path:
     description: >
-      A path used to build Emacs.
-    value: ${{ inputs.path }}
+      The path used to build Emacs.
 
   repository:
     description: >
       Name of the repository used to build Emacs.
-    value: ${{ inputs.repository }}
 
   ref:
     description: >
       The branch, tag, or SHA used to build Emacs.
-    value: >-
-      ${{ inputs.dev-ref != ''
-          && steps.checkout-dev-branch.outputs.ref
-          || ( inputs.cache
-               && steps.checkout-base-branch.outputs.ref
-               || inputs.base-ref ) }}
 
   cache-key:
     description: >
-      A key used to cache base Emacs build.
-    value: >-
-      ${{ runner.os == 'Windows'
-          && steps.cache-key-windows.outputs.key
-          || steps.cache-key-linux-macos.outputs.key }}
+      The key used to cache base Emacs build.
 
   cache-hit:
     description: >
       True when cache hit.
-    value: ${{ steps.cache-cask-packages.outputs.cache-hit }}
 #+end_src
 
 ** Comparison with Other Emacs Setup Actions
