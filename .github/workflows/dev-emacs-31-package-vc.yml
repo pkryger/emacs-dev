@@ -84,7 +84,6 @@ jobs:
               || steps.sed-dev.outputs.path }}
         run: |
           ./src/emacs -batch \
-              -l "${{ github.workspace }}/setup-emacs-dev/configure-git.el" \
               -l ../test/lisp/package-vc-tests.el \
               -f ert-run-tests-batch-and-exit
 
@@ -128,6 +127,5 @@ jobs:
         run: |
           echo $env:PATH
           .\src\emacs -batch `
-              -l "${{ github.workspace }}\setup-emacs-dev\configure-git.el" `
               -l ..\test\lisp\package-vc-tests.el `
               -f ert-run-tests-batch-and-exit
