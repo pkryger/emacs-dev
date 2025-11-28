@@ -3,11 +3,11 @@ param(
     [string] $MSYS2Location
 )
 
-echo "::group::Configure git line endings, user and email"
+echo "::group::Configure git line endings, user and email (pwsh/bash)"
 git config --global core.autocrlf input
 git config --global user.name "$env:GITHUB_ACTOR"
 git config --global user.email "$env:GITHUB_ACTOR_ID+$env:GITHUB_ACTOR@users.noreply.github.com"
-git config -l
+git config --show-origin --list
 echo "::endgroup::"
 
 echo "::group::Favour using system git"
