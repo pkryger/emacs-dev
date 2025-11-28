@@ -3,11 +3,15 @@ name: Build and Test dev-emacs-31-package-vc
 on:
   workflow_dispatch:
     inputs:
-      workflow-dev-branch:
-        type: boolean
-        description: Use dev branch for setup-emacs-dev action
+      branch:
+        type: choice
+        description: Branch for setup-emacs-dev action
         required: false
-        default: false
+        default: same-as-workflow
+        options:
+          - dev
+          - main
+          - same-as-workflow
       tmate-windows:
         type: boolean
         description: '[Windows] Enable tmate'
@@ -52,7 +56,11 @@ jobs:
     steps:
       - name: Setup Emacs dev build (main branch)
         id: sed-main
-        if: ${{ ! inputs.workflow-dev-branch }}
+        if: >-
+          ${{ ! inputs.branch
+              || inputs.branch == 'main'
+              || (inputs.branch == 'same-as-workflow'
+                  && github.ref_name == 'main' )}}
         uses: pkryger/setup-emacs-dev@main
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -63,7 +71,10 @@ jobs:
 
       - name: Setup Emacs dev build (dev branch)
         id: sed-dev
-        if: ${{ inputs.workflow-dev-branch }}
+        if: >-
+          ${{ inputs.branch == 'dev'
+              || (inputs.branch == 'same-as-workflow'
+                  && github.ref_name == 'dev' )}}
         uses: pkryger/setup-emacs-dev@dev
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -94,7 +105,11 @@ jobs:
     steps:
       - name: Setup Emacs dev build (main branch)
         id: sed-main
-        if: ${{ ! inputs.workflow-dev-branch }}
+        if: >-
+          ${{ ! inputs.branch
+              || inputs.branch == 'main'
+              || (inputs.branch == 'same-as-workflow'
+                  && github.ref_name == 'main' )}}
         uses: pkryger/setup-emacs-dev@main
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -102,7 +117,10 @@ jobs:
 
       - name: Setup Emacs dev build (dev branch)
         id: sed-dev
-        if: ${{ inputs.workflow-dev-branch }}
+        if: >-
+          ${{ inputs.branch == 'dev'
+              || (inputs.branch == 'same-as-workflow'
+                  && github.ref_name == 'dev' )}}
         uses: pkryger/setup-emacs-dev@dev
         with:
           dev-ref: dev-emacs-31-package-vc
