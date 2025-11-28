@@ -83,11 +83,6 @@ jobs:
                 || (runner.os == 'Linux' && inputs.tmate-linux)
                 || (runner.os == 'macOS' && inputs.tmate-macos) }}
 
-      - name: Checkout helper scripts
-        uses: actions/checkout@v4
-        with:
-          path: setup-emacs-dev
-
       - name: Run package-vc-tests
         shell: setup-emacs-dev-bash {0}
         working-directory: >-
