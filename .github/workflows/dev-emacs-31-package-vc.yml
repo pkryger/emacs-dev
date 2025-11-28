@@ -57,10 +57,9 @@ jobs:
       - name: Setup Emacs dev build (main branch)
         id: sed-main
         if: >-
-          ${{ ! inputs.branch
-              || inputs.branch == 'main'
-              || (inputs.branch == 'same-as-workflow'
-                  && github.ref_name == 'main' )}}
+          ${{ inputs.branch == 'main'
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'main' ) }}
         uses: pkryger/setup-emacs-dev@main
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -73,8 +72,8 @@ jobs:
         id: sed-dev
         if: >-
           ${{ inputs.branch == 'dev'
-              || (inputs.branch == 'same-as-workflow'
-                  && github.ref_name == 'dev' )}}
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'dev' ) }}
         uses: pkryger/setup-emacs-dev@dev
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -101,10 +100,9 @@ jobs:
       - name: Setup Emacs dev build (main branch)
         id: sed-main
         if: >-
-          ${{ ! inputs.branch
-              || inputs.branch == 'main'
-              || (inputs.branch == 'same-as-workflow'
-                  && github.ref_name == 'main' )}}
+          ${{ inputs.branch == 'main'
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'main' ) }}
         uses: pkryger/setup-emacs-dev@main
         with:
           dev-ref: dev-emacs-31-package-vc
@@ -114,8 +112,8 @@ jobs:
         id: sed-dev
         if: >-
           ${{ inputs.branch == 'dev'
-              || (inputs.branch == 'same-as-workflow'
-                  && github.ref_name == 'dev' )}}
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'dev' ) }}
         uses: pkryger/setup-emacs-dev@dev
         with:
           dev-ref: dev-emacs-31-package-vc
