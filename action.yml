@@ -30,8 +30,8 @@ inputs:
 
   configure-arguments:
     description: >
-      Arguments to pass to configure script, one argument per line.
-    default: |-
+      Arguments to pass to configure script.
+    default: >-
       --without-native-compilation
       --with-gnutls
       --with-modules
