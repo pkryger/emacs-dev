@@ -159,6 +159,39 @@ inputs:
       rebuilds on dev-ref.
     default: true
 
+  linux-extra-packages:
+    description: >
+      Extra packages to install on top of linux-packages on a Linux runner.
+    default: ''
+
+  macos-extra-packages:
+    description: >
+      Extra packages to install on top of macos-packages on a macOS runner.
+    default: ''
+
+  windows-extra-packages:
+    description: >
+      Extra packages to install on top of windows-packages on a Windows runner.
+    default: ''
+
+  linux-packages:
+    description: >
+      Packages to install with apt-get on a Linux runner.
+    default: >-
+      # see action.yml
+
+  macos-packages:
+    description: >
+      Packages to install with Homebrew on a macOS runner.
+    default: >-
+      # see action.yml
+
+  windows-packages:
+    description: >
+      Packages to install with MSYS2/pacman on a Windows runner.
+    default: >-
+      # see action.yml
+
 outputs:
   path:
     description: >

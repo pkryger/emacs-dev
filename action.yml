@@ -42,6 +42,103 @@ inputs:
       rebuilds on dev-ref.
     default: true
 
+  linux-extra-packages:
+    description: >
+      Extra packages to install on top of linux-packages on a Linux runner.
+    default: ''
+
+  macos-extra-packages:
+    description: >
+      Extra packages to install on top of macos-packages on a macOS runner.
+    default: ''
+
+  windows-extra-packages:
+    description: >
+      Extra packages to install on top of windows-packages on a Windows runner.
+    default: ''
+
+  linux-packages:
+    description: >
+      Packages to install with apt-get on a Linux runner.
+    default: >-
+      autoconf
+      automake
+      build-essential
+      libgif-dev
+      libgnutls28-dev
+      libgmp-dev
+      libgtk-3-dev
+      libharfbuzz-dev
+      libjpeg-dev
+      libncurses-dev
+      libpng-dev
+      libsqlite3-dev
+      libtiff-dev
+      libtree-sitter-dev
+      libwebp-dev
+      libxpm-dev
+      texinfo
+      tree-sitter-cli
+
+  macos-packages:
+    description: >
+      Packages to install with Homebrew on a macOS runner.
+    default: >-
+      autoconf
+      automake
+      awk
+      coreutils
+      giflib
+      gcc
+      gmp
+      gnu-sed
+      gnu-tar
+      gnutls
+      libjpeg
+      libpng
+      librsvg
+      libtiff
+      libxml2
+      libxpm
+      m4
+      make
+      pkg-config
+      sqlite
+      texinfo
+      tree-sitter
+      webp
+      zlib
+      xz
+
+  windows-packages:
+    description: >
+      Packages to install with MSYS2/pacman on a Windows runner.
+    default: >-
+      base-devel
+      autoconf
+      automake
+      git
+      texinfo
+      make
+      mingw-w64-x86_64-giflib
+      mingw-w64-x86_64-gnutls
+      mingw-w64-x86_64-gmp
+      mingw-w64-x86_64-harfbuzz
+      mingw-w64-x86_64-libjpeg-turbo
+      mingw-w64-x86_64-libpng
+      mingw-w64-x86_64-librsvg
+      mingw-w64-x86_64-libtiff
+      mingw-w64-x86_64-libtree-sitter
+      mingw-w64-x86_64-libwebp
+      mingw-w64-x86_64-libxml2
+      mingw-w64-x86_64-xpm-nox
+      mingw-w64-x86_64-make
+      mingw-w64-x86_64-sqlite3
+      mingw-w64-x86_64-texinfo
+      mingw-w64-x86_64-toolchain
+      mingw-w64-x86_64-tree-sitter
+      mingw-w64-x86_64-zlib
+
 outputs:
   path:
     description: >
@@ -89,61 +186,18 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          autoconf \
-          automake \
-          build-essential \
-          libgccjit-14-dev \
-          libgif-dev \
-          libgnutls28-dev \
-          libgmp-dev \
-          libgtk-3-dev \
-          libharfbuzz-dev \
-          libjansson-dev \
-          libjpeg-dev \
-          libncurses-dev \
-          libpng-dev \
-          libsqlite3-dev \
-          libtiff-dev \
-          libtree-sitter-dev \
-          libwebp-dev \
-          libxpm-dev \
-          texinfo \
-          tree-sitter-cli
+        sudo apt-get install -y                 \
+            ${{ inputs.linux-packages }}        \
+            ${{ inputs.linux-extra-packages }}
 
     - name: Install dependencies on macOS
       if: ${{ runner.os == 'macOS' }}
       shell: bash
       run: |
         brew update
-        brew install \
-          autoconf \
-          automake \
-          awk \
-          coreutils \
-          giflib \
-          gcc \
-          gmp \
-          gnu-sed \
-          gnu-tar \
-          gnutls \
-          jansson \
-          libjpeg \
-          libgccjit \
-          libpng \
-          librsvg \
-          libtiff \
-          libxml2 \
-          libxpm \
-          m4 \
-          make \
-          pkg-config \
-          sqlite \
-          texinfo \
-          tree-sitter \
-          webp \
-          zlib \
-          xz
+        brew install                            \
+            ${{ inputs.macos-packages }}        \
+            ${{ inputs.macos-extra-packages }}
 
     - name: Setup MSYS2 and install dependencies on Windows
       id: setup-msys2
@@ -152,31 +206,8 @@ runs:
       with:
         release: false
         install: >-
-          base-devel
-          autoconf
-          automake
-          git
-          texinfo
-          make
-          mingw-w64-x86_64-giflib
-          mingw-w64-x86_64-gnutls
-          mingw-w64-x86_64-gmp
-          mingw-w64-x86_64-harfbuzz
-          mingw-w64-x86_64-jansson
-          mingw-w64-x86_64-libjpeg-turbo
-          mingw-w64-x86_64-libpng
-          mingw-w64-x86_64-librsvg
-          mingw-w64-x86_64-libtiff
-          mingw-w64-x86_64-libtree-sitter
-          mingw-w64-x86_64-libwebp
-          mingw-w64-x86_64-libxml2
-          mingw-w64-x86_64-xpm-nox
-          mingw-w64-x86_64-make
-          mingw-w64-x86_64-sqlite3
-          mingw-w64-x86_64-texinfo
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-tree-sitter
-          mingw-w64-x86_64-zlib
+          ${{ inputs.windows-packages }}
+          ${{ inputs.windows-extra-packages }}
 
     - name: Configure git (pwsh/bash)
       if: ${{ runner.os == 'Windows' }}
@@ -204,12 +235,14 @@ runs:
       id: cache-key-windows
       shell: msys2 {0}
       run: |
-        echo "key=$('${{ github.action_path }}\get-cache-key.sh' \
-                        ${{ runner.os }} \
-                        ${{ github.server_url }} \
-                        ${{ inputs.repository }} \
-                        ${{ inputs.base-ref }} \
-                        "${{ inputs.configure-arguments }}")" \
+        echo "key=$('${{ github.action_path }}\get-cache-key.sh'    \
+                        ${{ runner.os }}                            \
+                        ${{ github.server_url }}                    \
+                        ${{ inputs.repository }}                    \
+                        ${{ inputs.base-ref }}                      \
+                        "${{ inputs.configure-arguments }}"         \
+                        "${{ inputs.windows-packages }}"            \
+                        "${{ inputs.windows-extra-packages }}")"    \
             >> "$GITHUB_OUTPUT"
 
     - name: Get Emacs cache key on Linux/macOS
@@ -219,12 +252,18 @@ runs:
       id: cache-key-linux-macos
       shell: bash
       run: |
-        echo "key=$(${{ github.action_path}}/get-cache-key.sh \
-                        ${{ runner.os }} \
-                        ${{ github.server_url }} \
-                        ${{ inputs.repository }} \
-                        ${{ inputs.base-ref }} \
-                        "${{ inputs.configure-arguments }}")" \
+        echo "key=$(${{ github.action_path}}/get-cache-key.sh       \
+                        ${{ runner.os }}                            \
+                        ${{ github.server_url }}                    \
+                        ${{ inputs.repository }}                    \
+                        ${{ inputs.base-ref }}                      \
+                        "${{ inputs.configure-arguments }}"         \
+                        "${{ runner.os == 'Linux'
+                             && inputs.linux-packages
+                             || inputs.macos-packages }}"           \
+                        "${{ runner.os == 'Linux'
+                             && inputs.linux-extra-packages
+                             || inputs.macos-extra-packages }}")"   \
             >> "$GITHUB_OUTPUT"
 
     - name: Restore cached Emacs build on base branch
