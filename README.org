@@ -15,15 +15,12 @@ Emacs repository.  Its purpose is narrowly defined: it builds Emacs, and does
 not attempt to install, package, or configure the resulting binaries for use in
 a typical package testing CI workflow.
 
-This action may be useful for users wishing to confirm build-ability of their
-development branches, or for those who require a build artefact constructed in
-a reproducible GitHub Actions environment, for example for testing patched
-Emacs source code in conjunction within some workflow.  See
+This action may be useful for users wishing to confirm build-ability and
+test-ability of their development branches.  For example for running tests
+during development of patches for Emacs source code.  The action functions on
+all GitHub-hosted runners: GNU/Linux, Microsoft Windows, and macOS.  See
 [[#comparison-with=other-emacs-setup-actions][below]] for comparison with other
 GitHub actions.
-
-The action functions on all GitHub-hosted runners: GNU/Linux, Microsoft
-Windows, and macOS.
 
 ** Branch Selection
 :properties:
@@ -31,13 +28,14 @@ Windows, and macOS.
 :end:
 Two kinds of branches may be specified:
 - Base branch — typically =master= (which is the default) or any other branch,
-  tag, or SHA.
+  tag, or SHA, see input ~base-ref~.
 - Development branch — a branch, tag, or SHA containing work-in-progress
-  modifications or experimental code.
+  modifications or experimental code, see input ~dev-ref~.
 The action will check out the selected base branch and proceed to build Emacs
 using the system’s native build tools and cache the result (unless opted out,
-see [[#action-inputs-and-outputs-reference][Inputs and Outputs Reference]])
-followed by a check out and build of the development branch.
+see [[#action-inputs-and-outputs-reference][Inputs and Outputs Reference]]).
+After building a base branch (or restoring a previous build from cache) the
+action checks out development branch and performs a build on it.
 
 ** Basic Usage
 :properties:
@@ -63,11 +61,12 @@ jobs:
       with:
         dev-ref: dev-branch
 #+end_src
-The build artifacts will be available in the
-~${{ steps.build-emacs-dev-branch.outputs.path }}~ which is relative path to
-workflow’s workspace directory, but no installation step is performed.
+The build artifacts will be available in the ~${{
+steps.build-emacs-dev-branch.outputs.path }}~ which is relative path to
+workflow’s workspace directory. Please note that no installation step is
+performed, i.e., the action doesn't call ~make install~.
 
-N.B. By default Build Emacs without native compilation.  Call the action with
+N.B. By default Build Emacs _without_ native compilation.  Call the action with
 custom ~configure-arguments~ to enable native compilation.
 
 ** Run Tests on a Development Branch
@@ -103,15 +102,15 @@ jobs:
               -f ert-run-tests-batch-and-exit
 #+end_src
 
-N.B. This action uses a `setup-emacs-dev-bash` as a shell argument.  This is a
-wrapper installed by this action that provides a single named entry point for a
-`bash` shell.  While it is possible to specify `bash` as a `shell` in a user
-workflow step, that, on a Windows runner, will use bash shell included with Git
-for Windows (see
+N.B. This action uses a ~setup-emacs-dev-bash~ as a ~shell~ argument.  This is
+a wrapper installed by this action that provides a single named entry point for
+a ~bash~ shell.  While it is possible to specify ~bash~ as a ~shell~ argument
+in a user workflow step, that, on a Windows runner, will use bash shell
+included with Git for Windows (see
 [[https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#defaultsrunshell][reference]]).
-In such a case no MSYS2 MinGW installed programs are available in `PATH`.  In
-contrast, with `setup-emacs-dev-bash` the step execution occurs within MSYS2
-provided `bash` shell.
+In such a case _no_ MSYS2 MinGW installed programs are available in ~PATH~.  In
+contrast, with ~setup-emacs-dev-bash~ the step execution occurs within MSYS2
+provided ~bash~ shell, with all MSYS2 MinGW installed programs available.
 
 ** Action Inputs and Outputs Reference
 :properties:
