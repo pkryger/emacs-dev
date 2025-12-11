@@ -88,9 +88,7 @@ inputs:
       automake
       awk
       coreutils
-      giflib
       gcc
-      gmp
       gnu-sed
       gnu-tar
       gnutls
@@ -99,7 +97,6 @@ inputs:
       librsvg
       libtiff
       libxml2
-      libxpm
       m4
       make
       pkg-config
