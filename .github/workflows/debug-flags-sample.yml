@@ -1,0 +1,77 @@
+name: Build with debug flags
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: choice
+        description: Branch for setup-emacs-dev action
+        required: false
+        default: same-as-workflow
+        options:
+          - dev
+          - main
+          - same-as-workflow
+      tmate-windows:
+        type: boolean
+        description: '[Windows] Enable tmate'
+        required: false
+        default: false
+      tmate-linux:
+        type: boolean
+        description: '[Linux] Enable tmate'
+        required: false
+        default: false
+      tmate-macos:
+        type: boolean
+        description: '[macOS] Enable tmate'
+        required: false
+        default: false
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    name: (${{ matrix.os }}) Build with debug flags
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+
+    steps:
+      - name: Setup Emacs dev build (main branch)
+        id: sed-main
+        if: >-
+          ${{ inputs.branch == 'main'
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'main' ) }}
+        uses: pkryger/setup-emacs-dev@main
+        with:
+          repository: emacs-mirror/emacs
+          configure-arguments: |-
+            --without-native-compilation
+            --with-modules
+            --with-gnutls
+            CFLAGS='-O0 -g3'
+          tmate: >-
+            ${{ (runner.os == 'Windows' && inputs.tmate-windows)
+                || (runner.os == 'Linux' && inputs.tmate-linux)
+                || (runner.os == 'macOS' && inputs.tmate-macos) }}
+
+      - name: Setup Emacs dev build (dev branch)
+        id: sed-dev
+        if: >-
+          ${{ inputs.branch == 'dev'
+              || (( ! inputs.branch || inputs.branch == 'same-as-workflow' )
+                  && github.ref_name == 'dev' ) }}
+        uses: pkryger/setup-emacs-dev@dev
+        with:
+          repository: emacs-mirror/emacs
+          configure-arguments: |-
+            --without-native-compilation
+            --with-modules
+            --with-gnutls
+            CFLAGS='-O0 -g3'
+          tmate: >-
+            ${{ (runner.os == 'Windows' && inputs.tmate-windows)
+                || (runner.os == 'Linux' && inputs.tmate-linux)
+                || (runner.os == 'macOS' && inputs.tmate-macos) }}
