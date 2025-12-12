@@ -32,17 +32,6 @@ on:
         description: '[macOS] Enable tmate'
         required: false
         default: false
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '**.org'
-      - '.gitignore'
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - '**.org'
-      - '.gitignore'
 
 jobs:
   build-and-test:
