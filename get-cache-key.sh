@@ -2,16 +2,15 @@
 
 echo "::group::Get cache key" >&2
 
-this="[$(basename "${0}")]"
-
 if [[ $# -lt 4 ]]; then
-    echo "Usage ${this} RUNNER_OS GITHUB_SERVER_URL REPOSITORY BASE_REF [ARGS...]" >&2
+    echo "Usage: $(basename "${0}") RUNNER_OS GITHUB_SERVER_URL REPOSITORY BASE_REF [ARGS...]" >&2
     echo "::engroup::" >&2
     exit 1
 fi
 
 set -euo pipefail
 
+this="[$(basename "${0}")]"
 runner_os=${1}
 repository=${2}/${3}
 base_ref=${4}

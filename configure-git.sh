@@ -1,5 +1,5 @@
 if [[ $# -gt 1 ]]; then
-    echo "Usage $0 [TYPE]"
+    echo "Usage: $(basename "${0}") [TYPE]"
     exit 1
 fi
 
