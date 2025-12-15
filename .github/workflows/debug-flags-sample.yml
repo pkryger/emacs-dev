@@ -47,7 +47,7 @@ jobs:
         uses: pkryger/setup-emacs-dev@main
         with:
           repository: emacs-mirror/emacs
-          configure-arguments: |-
+          configure-arguments: >-
             --without-native-compilation
             --with-modules
             --with-gnutls
