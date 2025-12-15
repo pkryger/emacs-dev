@@ -111,6 +111,53 @@ included with Git for Windows (see
 In such a case _no_ MSYS2 MinGW installed programs are available in ~PATH~.  In
 contrast, with ~setup-emacs-dev-bash~ the step execution occurs within MSYS2
 provided ~bash~ shell, with all MSYS2 MinGW installed programs available.
+** Build a Debug Emacs Executable
+This action supports passing arbitrary arguments to ~configure~ script.  It
+includes passing environment variables, which can be used to produce a debug
+Emacs executable.
+
+In addition, GDB on Linux and Windows as well as LLVM on macOS are setup, such
+that Emacs GDB/LLDB configuration is automatically applied.
+
+#+begin_src yaml
+name: Debug Emacs
+on:
+  workflow_dispatch:
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    steps:
+      - name: Setup Emacs debug build
+        uses: pkryger/emacs-dev@main
+        with:
+          configure-arguments: >-
+            --without-native-compilation
+            --with-modules
+            --with-gnutls
+            CFLAGS='-O0 -g3'
+          tmate: true
+#+end_src
+
+This will spun a three
+[tmate](https://github.com/marketplace/actions/debugging-with-tmate) sessions,
+see build log for connection string.
+
+Once connected, to a =tmate= session, user can:
+#+begin_src shell
+$ emacs/src/emacs -nw # start emacs
+#+end_src
+Type =C-b c= to create a new tmux window.  Then in the new window type:
+#+begin_src shell
+$ ps # to get the Emacs's process PID
+$ cd emacs/src
+$ gdb emacs # or 'lldb emacs' on macOS
+(gdb) attach <PID>
+#+end_src
+And use =C-b n=/=C-b p= to switch between =tmux= windows with GDB/LLDB and
+Emacs.
 
 ** Action Inputs and Outputs Reference
 :properties:
