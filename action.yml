@@ -64,6 +64,7 @@ inputs:
       autoconf
       automake
       build-essential
+      gdb
       libgif-dev
       libgnutls28-dev
       libgmp-dev
@@ -88,7 +89,6 @@ inputs:
       automake
       awk
       coreutils
-      gcc
       gnu-sed
       gnu-tar
       gnutls
@@ -117,6 +117,7 @@ inputs:
       git
       texinfo
       make
+      mingw-w64-x86_64-gdb
       mingw-w64-x86_64-giflib
       mingw-w64-x86_64-gnutls
       mingw-w64-x86_64-gmp
@@ -354,6 +355,26 @@ runs:
       shell: bash
       run: |
         ${{ github.action_path }}/setup-shell-wrapper.sh
+
+    - name: Setup LLDB
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        "${{ github.action_path }}/setup-lldb.sh"
+
+    - name: Setup GDB
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        "${{ github.action_path }}/setup-gdb.sh" \
+            "${{ github.workspace }}/${{ inputs.path }}"
+
+    - name: Setup GDB
+      if: ${{ runner.os == 'Windows' }}
+      shell: msys2 {0}
+      run: |
+        "${{ github.action_path }}\setup-gdb.sh" \
+            '${{ github.workspace }}\${{ inputs.path }}'
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
