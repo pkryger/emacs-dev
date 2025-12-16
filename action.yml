@@ -24,7 +24,7 @@ inputs:
 
   tmate:
     description: >
-      When true, run the action with tmate debugging enabled
+      Run the action with tmate debugging enabled
       (https://github.com/marketplace/actions/debugging-with-tmate)
     default: false
 
@@ -38,8 +38,8 @@ inputs:
 
   cache:
     description: >
-      When true, cache the base Emacs build.  Enabling cache should speed up
-      rebuilds on dev-ref.
+      Cache the base Emacs build.  Enabling cache should speed up rebuilds on
+      dev-ref.
     default: true
 
   linux-extra-packages:
