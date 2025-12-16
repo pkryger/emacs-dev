@@ -205,6 +205,13 @@ inputs:
       dev-ref.
     default: true
 
+  upgrade:
+    description: >
+      Upgrade packages installed in runner.  This issues 'apt-get upgrade' (on
+      Linux), 'brew upgrade' (on macOS), and 'pacman --sysupgrade' (on Windows)
+      before installing packages.
+    default: false
+
   linux-extra-packages:
     description: >
       Extra packages to install on top of linux-packages on a Linux runner.

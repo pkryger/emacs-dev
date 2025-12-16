@@ -42,6 +42,13 @@ inputs:
       dev-ref.
     default: true
 
+  upgrade:
+    description: >
+      Upgrade packages installed in runner.  This issues 'apt-get upgrade' (on
+      Linux), 'brew upgrade' (on macOS), and 'pacman --sysupgrade' (on Windows)
+      before installing packages.
+    default: false
+
   linux-extra-packages:
     description: >
       Extra packages to install on top of linux-packages on a Linux runner.
@@ -184,6 +191,9 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
+        if [[ "${{ inputs.upgrade }}" = "true" ]]; then
+            sudo apt-get upgrade
+        fi
         sudo apt-get install -y                 \
             ${{ inputs.linux-packages }}        \
             ${{ inputs.linux-extra-packages }}
@@ -193,6 +203,9 @@ runs:
       shell: bash
       run: |
         brew update
+        if [[ "${{ inputs.upgrade }}" = "true" ]]; then
+            brew upgrade
+        fi
         brew install                            \
             ${{ inputs.macos-packages }}        \
             ${{ inputs.macos-extra-packages }}
@@ -203,6 +216,7 @@ runs:
       uses: msys2/setup-msys2@v2
       with:
         release: false
+        update: ${{ inputs.upgrade }}
         install: >-
           ${{ inputs.windows-packages }}
           ${{ inputs.windows-extra-packages }}
@@ -233,14 +247,15 @@ runs:
       id: cache-key-windows
       shell: msys2 {0}
       run: |
-        echo "key=$('${{ github.action_path }}\get-cache-key.sh'    \
-                        ${{ runner.os }}                            \
-                        ${{ github.server_url }}                    \
-                        ${{ inputs.repository }}                    \
-                        ${{ inputs.base-ref }}                      \
-                        "${{ inputs.configure-arguments }}"         \
-                        "${{ inputs.windows-packages }}"            \
-                        "${{ inputs.windows-extra-packages }}")"    \
+        echo "key=$('${{ github.action_path }}\get-cache-key.sh'                            \
+                        ${{ runner.os }}                                                    \
+                        ${{ github.server_url }}                                            \
+                        ${{ inputs.repository }}                                            \
+                        ${{ inputs.base-ref }}                                              \
+                        ${{ inputs.upgrade == 'true' && '_UPGRADE_' || '_NO_UPGRADE_' }}    \
+                        "${{ inputs.configure-arguments }}"                                 \
+                        "${{ inputs.windows-packages }}"                                    \
+                        "${{ inputs.windows-extra-packages }}")"                            \
             >> "$GITHUB_OUTPUT"
 
     - name: Get Emacs cache key on Linux/macOS
@@ -250,18 +265,19 @@ runs:
       id: cache-key-linux-macos
       shell: bash
       run: |
-        echo "key=$(${{ github.action_path}}/get-cache-key.sh       \
-                        ${{ runner.os }}                            \
-                        ${{ github.server_url }}                    \
-                        ${{ inputs.repository }}                    \
-                        ${{ inputs.base-ref }}                      \
-                        "${{ inputs.configure-arguments }}"         \
+        echo "key=$(${{ github.action_path}}/get-cache-key.sh                               \
+                        ${{ runner.os }}                                                    \
+                        ${{ github.server_url }}                                            \
+                        ${{ inputs.repository }}                                            \
+                        ${{ inputs.base-ref }}                                              \
+                        ${{ inputs.upgrade == 'true' && '_UPGRADE_' || '_NO_UPGRADE_' }}    \
+                        "${{ inputs.configure-arguments }}"                                 \
                         "${{ runner.os == 'Linux'
                              && inputs.linux-packages
-                             || inputs.macos-packages }}"           \
+                             || inputs.macos-packages }}"                                   \
                         "${{ runner.os == 'Linux'
                              && inputs.linux-extra-packages
-                             || inputs.macos-extra-packages }}")"   \
+                             || inputs.macos-extra-packages }}")"                           \
             >> "$GITHUB_OUTPUT"
 
     - name: Restore cached Emacs build on base branch
